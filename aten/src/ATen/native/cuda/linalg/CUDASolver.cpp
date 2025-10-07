@@ -1139,6 +1139,7 @@ void syevd<float>(
     float* work,
     int lwork,
     int* info) {
+  TORCH_WARN("syevd float");
   TORCH_CUSOLVER_CHECK(
       cusolverDnSsyevd(handle, jobz, uplo, n, A, lda, W, work, lwork, info));
 }
@@ -1155,6 +1156,7 @@ void syevd<double>(
     double* work,
     int lwork,
     int* info) {
+  TORCH_WARN("syevd double");
   TORCH_CUSOLVER_CHECK(
       cusolverDnDsyevd(handle, jobz, uplo, n, A, lda, W, work, lwork, info));
 }
@@ -1171,6 +1173,7 @@ void syevd<c10::complex<float>, float>(
     c10::complex<float>* work,
     int lwork,
     int* info) {
+  TORCH_WARN("syevd complex float");
   TORCH_CUSOLVER_CHECK(cusolverDnCheevd(
       handle,
       jobz,
@@ -1196,6 +1199,7 @@ void syevd<c10::complex<double>, double>(
     c10::complex<double>* work,
     int lwork,
     int* info) {
+  TORCH_WARN("syevd complex double");
   TORCH_CUSOLVER_CHECK(cusolverDnZheevd(
       handle,
       jobz,
@@ -1298,6 +1302,7 @@ void syevj<float>(
     int lwork,
     int* info,
     syevjInfo_t params) {
+  TORCH_WARN("syevj float");
   TORCH_CUSOLVER_CHECK(cusolverDnSsyevj(
       handle, jobz, uplo, n, A, lda, W, work, lwork, info, params));
 }
@@ -1315,6 +1320,7 @@ void syevj<double>(
     int lwork,
     int* info,
     syevjInfo_t params) {
+  TORCH_WARN("syevj double");
   TORCH_CUSOLVER_CHECK(cusolverDnDsyevj(
       handle, jobz, uplo, n, A, lda, W, work, lwork, info, params));
 }
@@ -1332,6 +1338,7 @@ void syevj<c10::complex<float>, float>(
     int lwork,
     int* info,
     syevjInfo_t params) {
+  TORCH_WARN("syevj c10 complex float");
   TORCH_CUSOLVER_CHECK(cusolverDnCheevj(
       handle,
       jobz,
@@ -1359,6 +1366,7 @@ void syevj<c10::complex<double>, double>(
     int lwork,
     int* info,
     syevjInfo_t params) {
+  TORCH_WARN("syevj c10 complex double");
   TORCH_CUSOLVER_CHECK(cusolverDnZheevj(
       handle,
       jobz,
@@ -1469,6 +1477,7 @@ void syevjBatched<float>(
     int* info,
     syevjInfo_t params,
     int batchsize) {
+  TORCH_WARN("syevj batched float");
   TORCH_CUSOLVER_CHECK(cusolverDnSsyevjBatched(
       handle, jobz, uplo, n, A, lda, W, work, lwork, info, params, batchsize));
 }
@@ -1487,6 +1496,7 @@ void syevjBatched<double>(
     int* info,
     syevjInfo_t params,
     int batchsize) {
+  TORCH_WARN("syevj batched double");
   TORCH_CUSOLVER_CHECK(cusolverDnDsyevjBatched(
       handle, jobz, uplo, n, A, lda, W, work, lwork, info, params, batchsize));
 }
@@ -1505,6 +1515,7 @@ void syevjBatched<c10::complex<float>, float>(
     int* info,
     syevjInfo_t params,
     int batchsize) {
+  TORCH_WARN("syevj batched complex float");
   TORCH_CUSOLVER_CHECK(cusolverDnCheevjBatched(
       handle,
       jobz,
@@ -1534,6 +1545,7 @@ void syevjBatched<c10::complex<double>, double>(
     int* info,
     syevjInfo_t params,
     int batchsize) {
+  TORCH_WARN("syevj batched complex double");
   TORCH_CUSOLVER_CHECK(cusolverDnZheevjBatched(
       handle,
       jobz,
@@ -1834,6 +1846,7 @@ void xsyevd<float>(
     float* bufferOnHost,
     size_t workspaceInBytesOnHost,
     int* info) {
+  TORCH_WARN("xsyevd float");
   TORCH_CUSOLVER_CHECK(cusolverDnXsyevd(
       handle,
       params,
@@ -1868,6 +1881,7 @@ void xsyevd<double>(
     double* bufferOnHost,
     size_t workspaceInBytesOnHost,
     int* info) {
+  TORCH_WARN("xsyevd double");
   TORCH_CUSOLVER_CHECK(cusolverDnXsyevd(
       handle,
       params,
@@ -1902,6 +1916,7 @@ void xsyevd<c10::complex<float>, float>(
     c10::complex<float>* bufferOnHost,
     size_t workspaceInBytesOnHost,
     int* info) {
+  TORCH_WARN("xsyevd complex float");
   TORCH_CUSOLVER_CHECK(cusolverDnXsyevd(
       handle,
       params,
@@ -1936,6 +1951,7 @@ void xsyevd<c10::complex<double>, double>(
     c10::complex<double>* bufferOnHost,
     size_t workspaceInBytesOnHost,
     int* info) {
+  TORCH_WARN("xsyevd complex double");
   TORCH_CUSOLVER_CHECK(cusolverDnXsyevd(
       handle,
       params,
@@ -1971,6 +1987,7 @@ void xsyevBatched_bufferSize<float>(
     size_t *workspaceInBytesOnDevice,
     size_t *workspaceInBytesOnHost,
     int64_t batchSize) {
+  TORCH_WARN("xsyevd batched float");
   TORCH_CUSOLVER_CHECK(cusolverDnXsyevBatched_bufferSize(
        handle,
        params,
@@ -2001,6 +2018,7 @@ void xsyevBatched_bufferSize<double>(
     size_t *workspaceInBytesOnDevice,
     size_t *workspaceInBytesOnHost,
     int64_t batchSize) {
+  TORCH_WARN("xsyevd batched double");
   TORCH_CUSOLVER_CHECK(cusolverDnXsyevBatched_bufferSize(
        handle,
        params,
@@ -2094,6 +2112,7 @@ void xsyevBatched<float>(
     size_t workspaceInBytesOnHost,
     int *info,
     int64_t batchSize) {
+  TORCH_WARN("xsyev batched float");
   TORCH_CUSOLVER_CHECK(cusolverDnXsyevBatched(
        handle,
        params,
@@ -2130,6 +2149,7 @@ void xsyevBatched<double>(
     size_t workspaceInBytesOnHost,
     int *info,
     int64_t batchSize) {
+  TORCH_WARN("xsyev batched double");
   TORCH_CUSOLVER_CHECK(cusolverDnXsyevBatched(
        handle,
        params,
@@ -2166,6 +2186,7 @@ void xsyevBatched<c10::complex<float>, float>(
     size_t workspaceInBytesOnHost,
     int *info,
     int64_t batchSize) {
+  TORCH_WARN("xsyev batched complex float");
   TORCH_CUSOLVER_CHECK(cusolverDnXsyevBatched(
        handle,
        params,
@@ -2202,6 +2223,7 @@ void xsyevBatched<c10::complex<double>, double>(
     size_t workspaceInBytesOnHost,
     int *info,
     int64_t batchSize) {
+  TORCH_WARN("xsyev batched complex double");
   TORCH_CUSOLVER_CHECK(cusolverDnXsyevBatched(
        handle,
        params,
@@ -2221,6 +2243,25 @@ void xsyevBatched<c10::complex<double>, double>(
        info,
        batchSize));
 }
+
+// ---------------------------------------------------------------------------
+// Experimental: cuSOLVERDnXgeev (CUDA >= 12.8)
+// Placeholder to verify build detection of cuSOLVER version.
+// Implementation will follow in later revision.
+// ---------------------------------------------------------------------------
+
+#define STRINGIFY2(x) #x
+#define STRINGIFY(x) STRINGIFY2(x)
+
+#pragma message("Detected cuSOLVER version: " STRINGIFY(CUSOLVER_VERSION))
+
+
+
+#if defined(CUSOLVER_VERSION) && (CUSOLVER_VERSION >= 11702)
+
+#pragma message("Compiling with cuSOLVER >= 11.7.2 — Xgeev bindings enabled")
+
+#endif // defined(CUSOLVER_VERSION) && (CUSOLVER_VERSION >= 12800)
 
 #endif // USE_CUSOLVER_64_BIT_XSYEV_BATCHED
 
