@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.27 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 
 # Use compiler ID "AppleClang" instead of "Clang" for XCode. Not setting this
 # sometimes makes XCode C compiler gets detected as "Clang", even when the C++
@@ -25,6 +25,10 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
 endif()
 
 # ---[ Project and semantic versioning.
+set(CMAKE_CUDA_COMPILER "/usr/local/cuda-12.8/bin/nvcc")
+set(CMAKE_CUDA_ARCHITECTURES 89)
+
+
 project(Torch CXX C)
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
