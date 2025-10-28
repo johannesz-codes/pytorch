@@ -2151,10 +2151,7 @@ class TestLinalg(TestCase):
 
             w, v = eig
 
-            # move all tensors to CPU to avoid issues with GPU matmul
-            a = a.cpu().to(v.dtype)
-            v = v.to("cpu")
-            w = w.to("cpu")
+            a = a.to(v.dtype)
 
             if a.numel() == 0 and v.numel() == 0 and w.numel() == 0:
                 return True
@@ -2164,7 +2161,6 @@ class TestLinalg(TestCase):
             diff = (a @ v) - (v * w.unsqueeze(-2))
             diff = diff.abs()
             diff = torch.max(diff)
-            print(f"diff: {diff}")
             return diff <= atol
 
         def run_test(shape, *, symmetric=False):
@@ -2183,6 +2179,8 @@ class TestLinalg(TestCase):
             # compare with CPU
             expected = torch.linalg.eig(a.to(complementary_device))
             self.assertEqual(expected[0], actual[0])
+
+
             self.assertTrue(fulfills_eigen_decomposition_identity(a, actual, dtype))  # check evs using eigen identity
 
         shapes = [(0, 0),  # Empty matrix
