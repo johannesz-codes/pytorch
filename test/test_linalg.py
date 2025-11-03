@@ -1527,7 +1527,7 @@ class TestLinalg(TestCase):
                 if error is None:
                     torch.linalg.vector_norm(input, dim=dim)
                 else:
-                    with self.assertRaises(error, msg=error_msg):
+                    with self.assertRaises(error):
                         torch.linalg.vector_norm(input, dim=dim)
 
     # This test compares torch.linalg.norm and numpy.linalg.norm to ensure that
@@ -2149,31 +2149,46 @@ class TestLinalg(TestCase):
             else:
                 a = make_tensor(shape, dtype=dtype, device=device)
 
-            actual = torch.linalg.eig(a)
-
-            complementary_device = 'cpu'
-
-            # compare eigenvalues with CPU
-            expected = torch.linalg.eig(a.to(complementary_device))
-            self.assertEqual(expected[0], actual[0])
-
-
             # set tolerance for correctness check
             if dtype in [torch.float32, torch.complex64]:
                 atol = 1e-3  # CuSolver gives less accurate results for single precision (1-2 larger than OOM NumPy)
             else:
                 atol = 1e-13  # Same OOM for NumPy
 
-            # check correctness using eigendecomposition identity
-            w, v = actual
-            a = a.to(v.dtype)
 
-            if a.numel() == 0 and v.numel() == 0 and w.numel() == 0:
-                pass
-            elif a.numel() == 0 or v.numel() == 0 or w.numel() == 0:
-                raise RuntimeError("eig returned empty tensors unexpectedly")
+            complementary_device = 'cpu'
 
-            self.assertEqual(a @ v, v * w.unsqueeze(-2), atol=atol, rtol=0)
+            #run for legacy magma and new cuSolver backend
+            backends = ["default"]
+
+            if torch.device(device).type == 'cuda':
+                if torch.cuda.has_magma:
+                    backends.append("magma")
+                if has_cusolver():
+                    backends.append("cusolver")
+
+            for backend in backends:
+                torch.backends.cuda.preferred_linalg_library(backend)
+
+                actual = torch.linalg.eig(a)
+                expected = torch.linalg.eig(a.to(complementary_device)) # fails if calculated before switching backend
+
+                # compare eigenvalues with CPU
+                self.assertEqual(expected[0], actual[0])
+
+                # check correctness using eigendecomposition identity
+                w, v = actual
+                a = a.to(v.dtype)
+
+                if a.numel() == 0 and v.numel() == 0 and w.numel() == 0:
+                    pass
+                elif a.numel() == 0 or v.numel() == 0 or w.numel() == 0:
+                    raise RuntimeError(f"eig returned empty tensors unexpectedly for backend {backend}")
+
+                self.assertEqual(a @ v, v * w.unsqueeze(-2), atol=atol, rtol=0, msg=f'Backend: {backend}')
+
+            torch.backends.cuda.preferred_linalg_library('default')  # reset to default
+
 
         shapes = [(0, 0),  # Empty matrix
                   (5, 5),  # Single matrix
@@ -7133,7 +7148,7 @@ class TestLinalg(TestCase):
         elapsed_ortho_general = 0
         elapsed_scipy = 0
         elapsed_general_scipy = 0
-        for _ in range(repeat):
+        for i in range(repeat):
             start = time.time()
             torch.lobpcg(A1, X=X1, niter=niter, method='ortho', tol=tol)
             end = time.time()
@@ -8769,7 +8784,7 @@ scipy_lobpcg  | {eq_err_scipy:10.2e}  | {eq_err_general_scipy:10.2e}  | {iters2:
 
             num_matrices = tensors_batch.size(0)
             tensors_list = []
-            for _ in range(num_matrices):
+            for i in range(num_matrices):
                 tensors_list.append(torch.randn(n[-2], n[-1], dtype=dtype, device=device))
 
             for i in range(num_matrices):
