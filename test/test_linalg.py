@@ -2158,7 +2158,6 @@ class TestLinalg(TestCase):
 
             complementary_device = 'cpu'
 
-            #run for legacy magma and new cuSolver backend
             backends = ["default"]
 
             if torch.device(device).type == 'cuda':
@@ -2171,7 +2170,7 @@ class TestLinalg(TestCase):
                 torch.backends.cuda.preferred_linalg_library(backend)
 
                 actual = torch.linalg.eig(a)
-                expected = torch.linalg.eig(a.to(complementary_device)) # fails if calculated before switching backend
+                expected = torch.linalg.eig(a.to(complementary_device))  # fails if calculated before switching backend
 
                 # compare eigenvalues with CPU
                 self.assertEqual(expected[0], actual[0])
@@ -2344,22 +2343,34 @@ class TestLinalg(TestCase):
             else:
                 a = make_tensor(shape, dtype=dtype, device=device)
 
-            actual = torch.linalg.eigvals(a)
+            backends = ["default"]
+            if torch.device(device).type == 'cuda':
+                if torch.cuda.has_magma:
+                    backends.append("magma")
+                if has_cusolver():
+                    backends.append("cusolver")
 
-            complementary_device = 'cpu'
+            for backend in backends:
+                torch.backends.cuda.preferred_linalg_library(backend)
 
-            # compare with CPU
-            expected = torch.linalg.eigvals(a.to(complementary_device))
-            self.assertEqual(expected, actual)
+                actual = torch.linalg.eigvals(a)
 
-            # check out= variant
-            complex_dtype = dtype
-            if not dtype.is_complex:
-                complex_dtype = torch.complex128 if dtype == torch.float64 else torch.complex64
-            out = torch.empty(0, dtype=complex_dtype, device=device)
-            ans = torch.linalg.eigvals(a, out=out)
-            self.assertEqual(ans, out)
-            self.assertEqual(expected.to(complex_dtype), out)
+                complementary_device = 'cpu'
+
+                # compare with CPU
+                expected = torch.linalg.eigvals(a.to(complementary_device))
+                self.assertEqual(expected, actual)
+
+                # check out= variant
+                complex_dtype = dtype
+                if not dtype.is_complex:
+                    complex_dtype = torch.complex128 if dtype == torch.float64 else torch.complex64
+                out = torch.empty(0, dtype=complex_dtype, device=device)
+                ans = torch.linalg.eigvals(a, out=out)
+                self.assertEqual(ans, out)
+                self.assertEqual(expected.to(complex_dtype), out)
+
+            torch.backends.cuda.preferred_linalg_library('default')  # reset to default
 
             # check non-contiguous out
             if a.numel() > 0:
