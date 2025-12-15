@@ -3109,14 +3109,26 @@ Tensor& linalg_eigvals_out(const Tensor& input, Tensor& values) {
   }
 
   Tensor vectors;
+
+  bool calculate_vectors = false;
   vectors = at::empty({0}, input.options());
+
+  // avoid insufficient accuracy of xgeev on Grace-Hopper
+#if defined(__aarch64__)
+  if (input.scalar_type() == at::kFloat
+      && input.is_cuda()) {
+    calculate_vectors = true;
+    vectors = at::empty({0}, options.dtype(toComplexType(input.scalar_type())));
+  }
+#endif
+
   if (values_tmp_needed) {
     Tensor values_tmp = at::empty({0}, options.dtype(values_type));
-    std::tie(values_tmp, std::ignore) = linalg_eig_out_info(input, values_tmp, vectors, infos, /*compute_eigenvectors=*/false);
+    std::tie(values_tmp, std::ignore) = linalg_eig_out_info(input, values_tmp, vectors, infos, /*compute_eigenvectors=*/calculate_vectors);
     at::native::resize_output(values, values_tmp.sizes());
     values.copy_(values_tmp);
   } else { // use 'values' storage directly
-    std::tie(values, std::ignore) = linalg_eig_out_info(input, values, vectors, infos, /*compute_eigenvectors=*/false);
+    std::tie(values, std::ignore) = linalg_eig_out_info(input, values, vectors, infos, /*compute_eigenvectors=*/calculate_vectors);
   }
 
   // Now check LAPACK/MAGMA error codes
