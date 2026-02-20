@@ -1602,16 +1602,26 @@ void linalg_eigh_cusolver(const Tensor& eigenvalues, const Tensor& eigenvectors,
 #endif // ROCSOLVER_SYEVD_BATCHED_ENABLED
     linalg_eigh_cusolver_syevd(eigenvalues, eigenvectors, infos, upper, compute_eigenvectors);
 #else // not USE_ROCM
-  if (batchCount(eigenvectors) > 1 && eigenvectors.size(-1) <= 32) {
-    // Use syevjBatched for batched matrix operation when matrix size <= 32
-    // See https://github.com/pytorch/pytorch/pull/53040#issuecomment-788264724
+  const char* _env = std::getenv("TORCH_LINALG_EIGH_BACKEND");
+  int _mode = _env ? std::atoi(_env) : 0;
+
+  if (_mode == 3) {
+    // force syevj_batched
+    TORCH_WARN("using syevj_batched for eigh")
     linalg_eigh_cusolver_syevj_batched(eigenvalues, eigenvectors, infos, upper, compute_eigenvectors);
-  } else if (eigenvectors.scalar_type() == at::kFloat && eigenvectors.size(-1) >= 32 && eigenvectors.size(-1) <= 512) {
-    // syevj is better than syevd for float32 dtype and matrix sizes 32x32 - 512x512
-    // See https://github.com/pytorch/pytorch/pull/53040#issuecomment-788264724
+
+  } else if (_mode == 2) {
+    // force syevj
+    TORCH_WARN("using syevj for eigh")
     linalg_eigh_cusolver_syevj(eigenvalues, eigenvectors, infos, upper, compute_eigenvectors);
-  } else {
+
+  } else if (_mode == 1) {
+    // force syevd
+    TORCH_WARN("using syevd for eigh")
     linalg_eigh_cusolver_syevd(eigenvalues, eigenvectors, infos, upper, compute_eigenvectors);
+  }
+  else {
+    TORCH_CHECK(false, "Selected backend mode is not valid. Expected a value between 1 and 3 inclusive, got: ", _mode);
   }
 #endif
 }
