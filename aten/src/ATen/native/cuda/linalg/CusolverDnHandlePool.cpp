@@ -42,6 +42,21 @@ cusolverDnHandle_t getCurrentCUDASolverDnHandle() {
   auto handle = myPoolWindow->reserve(device);
   auto stream = c10::cuda::getCurrentCUDAStream();
   TORCH_CUSOLVER_CHECK(cusolverDnSetStream(handle, stream));
+#if !defined(USE_ROCM) && defined(CUSOLVER_VERSION) && CUSOLVER_VERSION >= 11101
+  // On CUDA >= 11.3 (cuSOLVER >= 11.1.1), cuSOLVER can use TF32 to speed up
+  // FP32 computations on Ampere+ architectures, controlled by the linalg
+  // float32 precision setting.
+  if (!NoTF32Guard::should_disable_tf32() &&
+      at::globalContext().float32Precision(
+          at::Float32Backend::CUDA, at::Float32Op::LINALG) ==
+          at::Float32Precision::TF32) {
+    TORCH_CUSOLVER_CHECK(
+        cusolverDnSetMathMode(handle, CUSOLVER_TF32_TENSOR_OP_MATH));
+  } else {
+    TORCH_CUSOLVER_CHECK(
+        cusolverDnSetMathMode(handle, CUSOLVER_DEFAULT_MATH));
+  }
+#endif
   return handle;
 }
 
