@@ -305,7 +305,7 @@ def cusolver_dn_math_mode(
     for more details.
 
     .. note:: Requires CUDA 11.5+ (cuSOLVER >= 11.3.0). On older CUDA versions, the setting
-        is stored but has no effect.
+              is stored but has no effect.
     """
     if math_mode is None:
         pass
@@ -353,7 +353,7 @@ def cusolver_dn_emulation_strategy(
     for more details.
 
     .. note:: Requires CUDA 12.1+ (cuSOLVER >= 11.6.1). On older CUDA versions, the setting
-        is stored but has no effect.
+              is stored but has no effect.
     """
     if strategy is None:
         pass
