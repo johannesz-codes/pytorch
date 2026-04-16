@@ -2686,7 +2686,7 @@ Call this whenever a new thread is created in order to propagate values from
 
   py::enum_<at::CuSolverDnMathMode>(py_module, "_CuSolverDnMathMode")
       .value("Default", at::CuSolverDnMathMode::Default)
-      .value("AllowDataTypeConversion", at::CuSolverDnMathMode::AllowDataTypeConversion);
+      .value("Fp32EmulatedBf16x9", at::CuSolverDnMathMode::Fp32EmulatedBf16x9);
 
   py_module.def("_set_cusolver_dn_math_mode", [](at::CuSolverDnMathMode mode) {
     at::globalContext().setCuSolverDnMathMode(mode);
@@ -2697,8 +2697,7 @@ Call this whenever a new thread is created in order to propagate values from
 
   py::enum_<at::CuSolverDnEmulationStrategy>(py_module, "_CuSolverDnEmulationStrategy")
       .value("Default", at::CuSolverDnEmulationStrategy::Default)
-      .value("DevicePrecision", at::CuSolverDnEmulationStrategy::DevicePrecision)
-      .value("Precise", at::CuSolverDnEmulationStrategy::Precise);
+      .value("Eager", at::CuSolverDnEmulationStrategy::Eager);
 
   py_module.def("_set_cusolver_dn_emulation_strategy", [](at::CuSolverDnEmulationStrategy s) {
     at::globalContext().setCuSolverDnEmulationStrategy(s);

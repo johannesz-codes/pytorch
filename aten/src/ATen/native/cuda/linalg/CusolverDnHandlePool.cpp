@@ -48,8 +48,8 @@ cusolverDnHandle_t getCurrentCUDASolverDnHandle() {
   {
     auto math_mode = at::globalContext().cusolverDnMathMode();
     cusolverMathMode_t mode = CUSOLVER_DEFAULT_MATH;
-    if (math_mode == at::CuSolverDnMathMode::AllowDataTypeConversion) {
-      mode = CUSOLVER_FP_EMU_ALLOW_DATA_TYPE_CONVERSION;
+    if (math_mode == at::CuSolverDnMathMode::Fp32EmulatedBf16x9) {
+      mode = CUSOLVER_FP32_EMULATED_BF16X9_MATH;
     }
     TORCH_CUSOLVER_CHECK(cusolverDnSetMathMode(handle, mode));
   }
@@ -60,10 +60,8 @@ cusolverDnHandle_t getCurrentCUDASolverDnHandle() {
     auto strategy = at::globalContext().cusolverDnEmulationStrategy();
     cusolverFpEmulationStrategy_t emu_strategy =
         CUSOLVER_FP_EMU_STRATEGY_DEFAULT;
-    if (strategy == at::CuSolverDnEmulationStrategy::DevicePrecision) {
-      emu_strategy = CUSOLVER_FP_EMU_STRATEGY_DEVICE_PRECISION;
-    } else if (strategy == at::CuSolverDnEmulationStrategy::Precise) {
-      emu_strategy = CUSOLVER_FP_EMU_STRATEGY_PRECISE;
+    if (strategy == at::CuSolverDnEmulationStrategy::Eager) {
+      emu_strategy = CUSOLVER_FP_EMU_STRATEGY_EAGER;
     }
     TORCH_CUSOLVER_CHECK(cusolverDnSetEmulationStrategy(handle, emu_strategy));
   }

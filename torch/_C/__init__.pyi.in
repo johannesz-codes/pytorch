@@ -1416,12 +1416,11 @@ class _LinalgBackend:
 
 class _CuSolverDnMathMode:
     Default: _CuSolverDnMathMode
-    AllowDataTypeConversion: _CuSolverDnMathMode
+    Fp32EmulatedBf16x9: _CuSolverDnMathMode
 
 class _CuSolverDnEmulationStrategy:
     Default: _CuSolverDnEmulationStrategy
-    DevicePrecision: _CuSolverDnEmulationStrategy
-    Precise: _CuSolverDnEmulationStrategy
+    Eager: _CuSolverDnEmulationStrategy
 
 # mypy error:
 # Detected enum "torch._C.BatchNormBackend" in a type stub with zero

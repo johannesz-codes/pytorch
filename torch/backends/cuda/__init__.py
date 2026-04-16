@@ -279,7 +279,7 @@ def preferred_linalg_library(
 
 _CuSolverDnMathModes = {
     "default": torch._C._CuSolverDnMathMode.Default,
-    "allow_data_type_conversion": torch._C._CuSolverDnMathMode.AllowDataTypeConversion,
+    "fp32_emulated_bf16x9": torch._C._CuSolverDnMathMode.Fp32EmulatedBf16x9,
 }
 _CuSolverDnMathModes_str = ", ".join(_CuSolverDnMathModes.keys())
 
@@ -293,12 +293,12 @@ def cusolver_dn_math_mode(
     .. warning:: This flag is experimental and subject to change.
 
     The cuSOLVER math mode controls floating-point emulation behavior.
-    When set to ``"allow_data_type_conversion"``, cuSOLVER may use lower-precision
-    data types internally for higher performance, at the cost of some numerical accuracy.
+    When set to ``"fp32_emulated_bf16x9"``, cuSOLVER uses FP32 data and computes
+    using the BF16x9 emulation algorithm for higher performance.
 
-    * If ``"default"`` is set, cuSOLVER uses its default math mode (no FP emulation).
-    * If ``"allow_data_type_conversion"`` is set, cuSOLVER may convert data types internally
-      for better performance (e.g., using FP32 to emulate FP64 operations).
+    * If ``"default"`` is set, cuSOLVER uses the default math mode (``CUSOLVER_DEFAULT_MATH``).
+    * If ``"fp32_emulated_bf16x9"`` is set, cuSOLVER uses ``CUSOLVER_FP32_EMULATED_BF16X9_MATH``.
+      This requires FP32 input data.
     * When no input is given, this function returns the currently configured math mode.
 
     See the `cuSOLVER documentation <https://docs.nvidia.com/cuda/cusolver/index.html#floating-point-emulation>`_
@@ -325,8 +325,7 @@ def cusolver_dn_math_mode(
 
 _CuSolverDnEmulationStrategies = {
     "default": torch._C._CuSolverDnEmulationStrategy.Default,
-    "device_precision": torch._C._CuSolverDnEmulationStrategy.DevicePrecision,
-    "precise": torch._C._CuSolverDnEmulationStrategy.Precise,
+    "eager": torch._C._CuSolverDnEmulationStrategy.Eager,
 }
 _CuSolverDnEmulationStrategies_str = ", ".join(
     _CuSolverDnEmulationStrategies.keys()
@@ -341,12 +340,13 @@ def cusolver_dn_emulation_strategy(
 
     .. warning:: This flag is experimental and subject to change.
 
-    The emulation strategy controls how cuSOLVER performs floating-point emulation
-    when math mode is set to ``"allow_data_type_conversion"``.
+    The emulation strategy controls when cuSOLVER performs floating-point emulation
+    when math mode is set to ``"fp32_emulated_bf16x9"``.
 
-    * If ``"default"`` is set, cuSOLVER uses its default emulation strategy.
-    * If ``"device_precision"`` is set, cuSOLVER uses the device's native precision for emulation.
-    * If ``"precise"`` is set, cuSOLVER uses a more precise (but potentially slower) emulation strategy.
+    * If ``"default"`` is set, cuSOLVER uses its default (lazy) emulation strategy
+      (``CUSOLVER_FP_EMU_STRATEGY_DEFAULT``).
+    * If ``"eager"`` is set, cuSOLVER eagerly applies emulation
+      (``CUSOLVER_FP_EMU_STRATEGY_EAGER``).
     * When no input is given, this function returns the currently configured strategy.
 
     See the `cuSOLVER documentation <https://docs.nvidia.com/cuda/cusolver/index.html#floating-point-emulation>`_

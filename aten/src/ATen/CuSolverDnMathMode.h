@@ -10,8 +10,8 @@ namespace at {
 // Mirrors cusolverMathMode_t from cuSOLVER API
 enum class CuSolverDnMathMode : int8_t {
   Default = 0,
-  // Maps to CUSOLVER_FP_EMU_ALLOW_DATA_TYPE_CONVERSION
-  AllowDataTypeConversion = 1,
+  // Maps to CUSOLVER_FP32_EMULATED_BF16X9_MATH
+  Fp32EmulatedBf16x9 = 1,
 };
 
 inline std::string CuSolverDnMathModeToString(
@@ -19,8 +19,8 @@ inline std::string CuSolverDnMathModeToString(
   switch (math_mode) {
     case CuSolverDnMathMode::Default:
       return "at::CuSolverDnMathMode::Default";
-    case CuSolverDnMathMode::AllowDataTypeConversion:
-      return "at::CuSolverDnMathMode::AllowDataTypeConversion";
+    case CuSolverDnMathMode::Fp32EmulatedBf16x9:
+      return "at::CuSolverDnMathMode::Fp32EmulatedBf16x9";
     default:
       TORCH_CHECK(false, "Unknown cuSolver math mode");
   }
@@ -35,10 +35,8 @@ inline std::ostream& operator<<(
 // Mirrors cusolverFpEmulationStrategy_t from cuSOLVER API
 enum class CuSolverDnEmulationStrategy : int8_t {
   Default = 0,
-  // Maps to CUSOLVER_FP_EMU_STRATEGY_DEVICE_PRECISION
-  DevicePrecision = 1,
-  // Maps to CUSOLVER_FP_EMU_STRATEGY_PRECISE
-  Precise = 2,
+  // Maps to CUSOLVER_FP_EMU_STRATEGY_EAGER
+  Eager = 1,
 };
 
 inline std::string CuSolverDnEmulationStrategyToString(
@@ -46,10 +44,8 @@ inline std::string CuSolverDnEmulationStrategyToString(
   switch (strategy) {
     case CuSolverDnEmulationStrategy::Default:
       return "at::CuSolverDnEmulationStrategy::Default";
-    case CuSolverDnEmulationStrategy::DevicePrecision:
-      return "at::CuSolverDnEmulationStrategy::DevicePrecision";
-    case CuSolverDnEmulationStrategy::Precise:
-      return "at::CuSolverDnEmulationStrategy::Precise";
+    case CuSolverDnEmulationStrategy::Eager:
+      return "at::CuSolverDnEmulationStrategy::Eager";
     default:
       TORCH_CHECK(false, "Unknown cuSolver emulation strategy");
   }
