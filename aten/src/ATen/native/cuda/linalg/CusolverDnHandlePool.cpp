@@ -1,3 +1,4 @@
+#include <ATen/Context.h>
 #include <ATen/cuda/CUDAContext.h>
 #include <ATen/cuda/detail/DeviceThreadHandles.h>
 
@@ -42,6 +43,32 @@ cusolverDnHandle_t getCurrentCUDASolverDnHandle() {
   auto handle = myPoolWindow->reserve(device);
   auto stream = c10::cuda::getCurrentCUDAStream();
   TORCH_CUSOLVER_CHECK(cusolverDnSetStream(handle, stream));
+
+#if !defined(USE_ROCM) && defined(CUSOLVER_VERSION) && CUSOLVER_VERSION >= 11300
+  {
+    auto math_mode = at::globalContext().cusolverDnMathMode();
+    cusolverMathMode_t mode = CUSOLVER_DEFAULT_MATH;
+    if (math_mode == at::CuSolverDnMathMode::AllowDataTypeConversion) {
+      mode = CUSOLVER_FP_EMU_ALLOW_DATA_TYPE_CONVERSION;
+    }
+    TORCH_CUSOLVER_CHECK(cusolverDnSetMathMode(handle, mode));
+  }
+#endif
+
+#if !defined(USE_ROCM) && defined(CUSOLVER_VERSION) && CUSOLVER_VERSION >= 11601
+  {
+    auto strategy = at::globalContext().cusolverDnEmulationStrategy();
+    cusolverFpEmulationStrategy_t emu_strategy =
+        CUSOLVER_FP_EMU_STRATEGY_DEFAULT;
+    if (strategy == at::CuSolverDnEmulationStrategy::DevicePrecision) {
+      emu_strategy = CUSOLVER_FP_EMU_STRATEGY_DEVICE_PRECISION;
+    } else if (strategy == at::CuSolverDnEmulationStrategy::Precise) {
+      emu_strategy = CUSOLVER_FP_EMU_STRATEGY_PRECISE;
+    }
+    TORCH_CUSOLVER_CHECK(cusolverDnSetEmulationStrategy(handle, emu_strategy));
+  }
+#endif
+
   return handle;
 }
 

@@ -15,6 +15,8 @@ __all__ = [
     "preferred_linalg_library",
     "preferred_blas_library",
     "preferred_rocm_fa_library",
+    "cusolver_dn_math_mode",
+    "cusolver_dn_emulation_strategy",
     "is_ck_sdpa_available",
     "cufft_plan_cache",
     "matmul",
@@ -273,6 +275,102 @@ def preferred_linalg_library(
         raise RuntimeError("Unknown input value type.")
 
     return torch._C._get_linalg_preferred_backend()
+
+
+_CuSolverDnMathModes = {
+    "default": torch._C._CuSolverDnMathMode.Default,
+    "allow_data_type_conversion": torch._C._CuSolverDnMathMode.AllowDataTypeConversion,
+}
+_CuSolverDnMathModes_str = ", ".join(_CuSolverDnMathModes.keys())
+
+
+def cusolver_dn_math_mode(
+    math_mode: None | str | torch._C._CuSolverDnMathMode = None,
+) -> torch._C._CuSolverDnMathMode:
+    r"""
+    Set or get the cuSOLVER math mode for all cuSolver dense handles.
+
+    .. warning:: This flag is experimental and subject to change.
+
+    The cuSOLVER math mode controls floating-point emulation behavior.
+    When set to ``"allow_data_type_conversion"``, cuSOLVER may use lower-precision
+    data types internally for higher performance, at the cost of some numerical accuracy.
+
+    * If ``"default"`` is set, cuSOLVER uses its default math mode (no FP emulation).
+    * If ``"allow_data_type_conversion"`` is set, cuSOLVER may convert data types internally
+      for better performance (e.g., using FP32 to emulate FP64 operations).
+    * When no input is given, this function returns the currently configured math mode.
+
+    See the `cuSOLVER documentation <https://docs.nvidia.com/cuda/cusolver/index.html#floating-point-emulation>`_
+    for more details.
+
+    .. note:: Requires CUDA 11.5+ (cuSOLVER >= 11.3.0). On older CUDA versions, the setting
+        is stored but has no effect.
+    """
+    if math_mode is None:
+        pass
+    elif isinstance(math_mode, str):
+        if math_mode not in _CuSolverDnMathModes:
+            raise RuntimeError(
+                f"Unknown input value. Choose from: {_CuSolverDnMathModes_str}."
+            )
+        torch._C._set_cusolver_dn_math_mode(_CuSolverDnMathModes[math_mode])
+    elif isinstance(math_mode, torch._C._CuSolverDnMathMode):
+        torch._C._set_cusolver_dn_math_mode(math_mode)
+    else:
+        raise RuntimeError("Unknown input value type.")
+
+    return torch._C._get_cusolver_dn_math_mode()
+
+
+_CuSolverDnEmulationStrategies = {
+    "default": torch._C._CuSolverDnEmulationStrategy.Default,
+    "device_precision": torch._C._CuSolverDnEmulationStrategy.DevicePrecision,
+    "precise": torch._C._CuSolverDnEmulationStrategy.Precise,
+}
+_CuSolverDnEmulationStrategies_str = ", ".join(
+    _CuSolverDnEmulationStrategies.keys()
+)
+
+
+def cusolver_dn_emulation_strategy(
+    strategy: None | str | torch._C._CuSolverDnEmulationStrategy = None,
+) -> torch._C._CuSolverDnEmulationStrategy:
+    r"""
+    Set or get the cuSOLVER floating-point emulation strategy for all cuSolver dense handles.
+
+    .. warning:: This flag is experimental and subject to change.
+
+    The emulation strategy controls how cuSOLVER performs floating-point emulation
+    when math mode is set to ``"allow_data_type_conversion"``.
+
+    * If ``"default"`` is set, cuSOLVER uses its default emulation strategy.
+    * If ``"device_precision"`` is set, cuSOLVER uses the device's native precision for emulation.
+    * If ``"precise"`` is set, cuSOLVER uses a more precise (but potentially slower) emulation strategy.
+    * When no input is given, this function returns the currently configured strategy.
+
+    See the `cuSOLVER documentation <https://docs.nvidia.com/cuda/cusolver/index.html#floating-point-emulation>`_
+    for more details.
+
+    .. note:: Requires CUDA 12.1+ (cuSOLVER >= 11.6.1). On older CUDA versions, the setting
+        is stored but has no effect.
+    """
+    if strategy is None:
+        pass
+    elif isinstance(strategy, str):
+        if strategy not in _CuSolverDnEmulationStrategies:
+            raise RuntimeError(
+                f"Unknown input value. Choose from: {_CuSolverDnEmulationStrategies_str}."
+            )
+        torch._C._set_cusolver_dn_emulation_strategy(
+            _CuSolverDnEmulationStrategies[strategy]
+        )
+    elif isinstance(strategy, torch._C._CuSolverDnEmulationStrategy):
+        torch._C._set_cusolver_dn_emulation_strategy(strategy)
+    else:
+        raise RuntimeError("Unknown input value type.")
+
+    return torch._C._get_cusolver_dn_emulation_strategy()
 
 
 _BlasBackends = {

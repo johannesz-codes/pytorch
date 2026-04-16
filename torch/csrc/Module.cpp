@@ -12,6 +12,7 @@
 #include <ATen/ATen.h>
 #include <ATen/BlasBackend.h>
 #include <ATen/CachedTensorUtils.h>
+#include <ATen/CuSolverDnMathMode.h>
 #include <ATen/DLConvertor.h>
 #include <ATen/ExpandUtils.h>
 #include <ATen/LegacyVmapMode.h>
@@ -2681,6 +2682,29 @@ Call this whenever a new thread is created in order to propagate values from
   });
   py_module.def("_get_linalg_preferred_backend", []() {
     return at::globalContext().linalgPreferredBackend();
+  });
+
+  py::enum_<at::CuSolverDnMathMode>(py_module, "_CuSolverDnMathMode")
+      .value("Default", at::CuSolverDnMathMode::Default)
+      .value("AllowDataTypeConversion", at::CuSolverDnMathMode::AllowDataTypeConversion);
+
+  py_module.def("_set_cusolver_dn_math_mode", [](at::CuSolverDnMathMode mode) {
+    at::globalContext().setCuSolverDnMathMode(mode);
+  });
+  py_module.def("_get_cusolver_dn_math_mode", []() {
+    return at::globalContext().cusolverDnMathMode();
+  });
+
+  py::enum_<at::CuSolverDnEmulationStrategy>(py_module, "_CuSolverDnEmulationStrategy")
+      .value("Default", at::CuSolverDnEmulationStrategy::Default)
+      .value("DevicePrecision", at::CuSolverDnEmulationStrategy::DevicePrecision)
+      .value("Precise", at::CuSolverDnEmulationStrategy::Precise);
+
+  py_module.def("_set_cusolver_dn_emulation_strategy", [](at::CuSolverDnEmulationStrategy s) {
+    at::globalContext().setCuSolverDnEmulationStrategy(s);
+  });
+  py_module.def("_get_cusolver_dn_emulation_strategy", []() {
+    return at::globalContext().cusolverDnEmulationStrategy();
   });
 
   py::enum_<at::BlasBackend>(py_module, "_BlasBackend")

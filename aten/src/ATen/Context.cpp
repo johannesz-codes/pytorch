@@ -452,6 +452,23 @@ void Context::setLinalgPreferredBackend(at::LinalgBackend b) {
   }
 }
 
+at::CuSolverDnMathMode Context::cusolverDnMathMode() const {
+  return cusolver_dn_math_mode;
+}
+
+void Context::setCuSolverDnMathMode(at::CuSolverDnMathMode mode) {
+  cusolver_dn_math_mode = mode;
+}
+
+at::CuSolverDnEmulationStrategy Context::cusolverDnEmulationStrategy() const {
+  return cusolver_dn_emulation_strategy;
+}
+
+void Context::setCuSolverDnEmulationStrategy(
+    at::CuSolverDnEmulationStrategy s) {
+  cusolver_dn_emulation_strategy = s;
+}
+
 at::BlasBackend Context::blasPreferredBackend() {
   // Rather than put logic for interpreting what Default means at every
   // call site for blasPreferredBackend(), we set it to an actual value.

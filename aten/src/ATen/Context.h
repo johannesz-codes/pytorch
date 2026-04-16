@@ -2,6 +2,7 @@
 
 #include <ATen/BlasBackend.h>
 #include <ATen/CPUGeneratorImpl.h>
+#include <ATen/CuSolverDnMathMode.h>
 #include <ATen/DeviceAccelerator.h>
 #include <ATen/LinalgBackend.h>
 #include <ATen/ROCmFABackend.h>
@@ -289,6 +290,12 @@ class TORCH_API Context {
   at::LinalgBackend linalgPreferredBackend() const;
   void setLinalgPreferredBackend(at::LinalgBackend /*b*/);
 
+  at::CuSolverDnMathMode cusolverDnMathMode() const;
+  void setCuSolverDnMathMode(at::CuSolverDnMathMode /*mode*/);
+
+  at::CuSolverDnEmulationStrategy cusolverDnEmulationStrategy() const;
+  void setCuSolverDnEmulationStrategy(at::CuSolverDnEmulationStrategy /*s*/);
+
   at::BlasBackend blasPreferredBackend();
   void setBlasPreferredBackend(at::BlasBackend /*b*/);
 
@@ -498,6 +505,10 @@ class TORCH_API Context {
        c10::utils::check_env("TORCH_LINALG_PREFER_HIPSOLVER") == true) // alias
       ? at::LinalgBackend::Cusolver
       : at::LinalgBackend::Default;
+  at::CuSolverDnMathMode cusolver_dn_math_mode =
+      at::CuSolverDnMathMode::Default;
+  at::CuSolverDnEmulationStrategy cusolver_dn_emulation_strategy =
+      at::CuSolverDnEmulationStrategy::Default;
   at::BlasBackend blas_preferred_backend =
       (c10::utils::check_env("TORCH_BLAS_PREFER_CUBLASLT") == true ||
        c10::utils::check_env("TORCH_BLAS_PREFER_HIPBLASLT") == true) // alias
