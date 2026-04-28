@@ -30,6 +30,10 @@ cusolverDnHandle_t getCurrentCUDASolverDnHandle() {
   c10::DeviceIndex device = 0;
   AT_CUDA_CHECK(c10::cuda::GetDevice(&device));
 
+  static const bool use_fp32_bf16x9 =
+    c10::utils::check_env("FP32_BF16x9") == true;
+
+
   // Thread local PoolWindows are lazily-initialized
   // to avoid initialization issues that caused hangs on Windows.
   // See: https://github.com/pytorch/pytorch/pull/22405
@@ -42,6 +46,19 @@ cusolverDnHandle_t getCurrentCUDASolverDnHandle() {
   auto handle = myPoolWindow->reserve(device);
   auto stream = c10::cuda::getCurrentCUDAStream();
   TORCH_CUSOLVER_CHECK(cusolverDnSetStream(handle, stream));
+  if (use_fp32_bf16x9) {
+    TORCH_WARN("Setting MathMode to emulated FP32 math");
+    TORCH_CUSOLVER_CHECK(cusolverDnSetMathMode(
+        handle, CUSOLVER_FP32_EMULATED_BF16X9_MATH));
+    TORCH_CUSOLVER_CHECK(cusolverDnSetEmulationStrategy(
+        handle, CUDA_EMULATION_STRATEGY_PERFORMANT));
+  } else {
+    TORCH_WARN("Setting MathMode to default");
+    TORCH_CUSOLVER_CHECK(cusolverDnSetMathMode(
+        handle, CUSOLVER_DEFAULT_MATH));
+    TORCH_CUSOLVER_CHECK(cusolverDnSetEmulationStrategy(
+        handle, CUDA_EMULATION_STRATEGY_DEFAULT));
+  }
   return handle;
 }
 
