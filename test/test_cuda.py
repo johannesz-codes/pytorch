@@ -1109,6 +1109,15 @@ print(t.is_pinned())
 
     @recover_orig_fp32_precision
     @serialTest()
+    def test_cusolver_linalg_fp32_precision_get_set(self):
+        self.assertEqual(torch.backends.cuda.linalg.fp32_precision, "tf32")
+        torch.backends.cuda.linalg.fp32_precision = "ieee"
+        self.assertEqual(torch.backends.cuda.linalg.fp32_precision, "ieee")
+        torch.backends.cuda.linalg.fp32_precision = "tf32"
+        self.assertEqual(torch.backends.cuda.linalg.fp32_precision, "tf32")
+
+    @recover_orig_fp32_precision
+    @serialTest()
     def test_invalid_status_for_legacy_api(self):
         torch.backends.cudnn.conv.fp32_precision = "none"
         torch.backends.cudnn.rnn.fp32_precision = "tf32"

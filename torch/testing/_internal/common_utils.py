@@ -6086,6 +6086,7 @@ def recover_orig_fp32_precision(fn):
         old_cudnn_conv_p = torch.backends.cudnn.conv.fp32_precision  # type: ignore[attr-defined]
         old_cudnn_rnn_p = torch.backends.cudnn.rnn.fp32_precision  # type: ignore[attr-defined]
         old_cuda_matmul_p = torch.backends.cuda.matmul.fp32_precision
+        old_cuda_linalg_p = torch.backends.cuda.linalg.fp32_precision
         try:
             yield
         finally:
@@ -6095,6 +6096,7 @@ def recover_orig_fp32_precision(fn):
             torch.backends.cudnn.conv.fp32_precision = old_cudnn_conv_p  # type: ignore[attr-defined]
             torch.backends.cudnn.rnn.fp32_precision = old_cudnn_rnn_p  # type: ignore[attr-defined]
             torch.backends.cuda.matmul.fp32_precision = old_cuda_matmul_p
+            torch.backends.cuda.linalg.fp32_precision = old_cuda_linalg_p
 
     return recover()(fn)
 

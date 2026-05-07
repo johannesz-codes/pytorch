@@ -12,6 +12,7 @@ __all__ = [
     "cuFFTPlanCache",
     "cuFFTPlanCacheManager",
     "cuBLASModule",
+    "cuSOLVERModule",
     "preferred_linalg_library",
     "preferred_blas_library",
     "cublas_workspace_size",
@@ -21,6 +22,7 @@ __all__ = [
     "is_ck_sdpa_available",
     "cufft_plan_cache",
     "matmul",
+    "linalg",
     "SDPAParams",
     "enable_cudnn_sdp",
     "cudnn_sdp_enabled",
@@ -707,5 +709,18 @@ def sdp_kernel(
             pass
 
 
+class cuSOLVERModule:
+    def __getattr__(self, name):
+        if name == "fp32_precision":
+            return torch._C._get_fp32_precision_getter("cuda", "linalg")
+        raise AttributeError("Unknown attribute " + name)
+
+    def __setattr__(self, name, value):
+        if name == "fp32_precision":
+            return torch._C._set_fp32_precision_setter("cuda", "linalg", value)
+        raise AttributeError("Unknown attribute " + name)
+
+
 cufft_plan_cache = cuFFTPlanCacheManager()
 matmul = cuBLASModule()
+linalg = cuSOLVERModule()
