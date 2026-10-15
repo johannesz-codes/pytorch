@@ -2303,7 +2303,8 @@ class TestLinalg(TestCase):
                   (5, 5),  # Single matrix
                   (0, 0, 0), (0, 5, 5),  # Zero batch dimension tensors
                   (2, 5, 5),  # 3-dim tensors
-                  (2, 1, 5, 5)]  # 4-dim tensors
+                  (2, 1, 5, 5),  # 4-dim tensors
+                  (4, 1, 1), (2, 3, 1, 1)]  # batches of 1x1 matrices
         for shape in shapes:
             run_test(shape)
             run_test(shape, symmetric=True)
@@ -2365,7 +2366,8 @@ class TestLinalg(TestCase):
                   (5, 5),  # Single matrix
                   (0, 0, 0), (0, 5, 5),  # Zero batch dimension tensors
                   (2, 5, 5),  # 3-dim tensors
-                  (2, 1, 5, 5)]  # 4-dim tensors
+                  (2, 1, 5, 5),  # 4-dim tensors
+                  (4, 1, 1), (2, 3, 1, 1)]  # batches of 1x1 matrices
         for shape in shapes:
             run_test(shape)
             run_test(shape, symmetric=True)
@@ -2410,7 +2412,8 @@ class TestLinalg(TestCase):
                   (5, 5),  # Single matrix
                   (0, 0, 0), (0, 5, 5),  # Zero batch dimension tensors
                   (2, 5, 5),  # 3-dim tensors
-                  (2, 1, 5, 5)]  # 4-dim tensors
+                  (2, 1, 5, 5),  # 4-dim tensors
+                  (4, 1, 1), (2, 3, 1, 1)]  # batches of 1x1 matrices
         for shape in shapes:
             run_test(shape)
             run_test(shape, symmetric=True)
@@ -2466,11 +2469,29 @@ class TestLinalg(TestCase):
                   (5, 5),  # Single matrix
                   (0, 0, 0), (0, 5, 5),  # Zero batch dimension tensors
                   (2, 5, 5),  # 3-dim tensors
-                  (2, 1, 5, 5)]  # 4-dim tensors
+                  (2, 1, 5, 5),  # 4-dim tensors
+                  (4, 1, 1), (2, 3, 1, 1)]  # batches of 1x1 matrices
         for shape in shapes:
             run_test(shape)
             run_test(shape, symmetric=True)
 
+
+    @skipCPUIfNoLapack
+    @skipCUDAIf(
+        not TEST_WITH_ROCM and _get_torch_cuda_version() < (12, 8) and not torch.cuda.has_magma,
+        "torch.linalg.eig requires MAGMA for CUDA versions < 12.8",
+    )
+    @dtypes(*floating_and_complex_types())
+    def test_eig_1x1(self, device, dtype):
+        # regression test for https://github.com/pytorch/pytorch/issues/200727
+        for shape in [(1, 1), (64, 349, 1, 1)]:
+            a = make_tensor(shape, dtype=dtype, device=device)
+            expected_values = a[..., 0]
+
+            w, v = torch.linalg.eig(a)
+            self.assertEqual(w, expected_values, exact_dtype=False, atol=0, rtol=0)
+            self.assertEqual(v, torch.ones_like(a), exact_dtype=False, atol=0, rtol=0)
+            self.assertEqual(torch.linalg.eigvals(a), expected_values, exact_dtype=False, atol=0, rtol=0)
 
     @onlyCUDA
     @skipCUDAIf(
@@ -2685,7 +2706,8 @@ class TestLinalg(TestCase):
                   (5, 5),  # Single matrix
                   (0, 0, 0), (0, 5, 5),  # Zero batch dimension tensors
                   (2, 5, 5),  # 3-dim tensors
-                  (2, 1, 5, 5)]  # 4-dim tensors
+                  (2, 1, 5, 5),  # 4-dim tensors
+                  (4, 1, 1), (2, 3, 1, 1)]  # batches of 1x1 matrices
         for shape in shapes:
             run_test(shape)
             run_test(shape, symmetric=True)

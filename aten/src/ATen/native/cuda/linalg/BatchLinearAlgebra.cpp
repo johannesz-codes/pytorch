@@ -992,6 +992,25 @@ void linalg_eig_kernel(Tensor& eigenvalues, Tensor& eigenvectors, Tensor& infos,
   // tensors should be in batched column major memory format
   // the content of eigenvalues, eigenvectors and infos is overwritten by 'linalg_eig_magma' or
   // 'linalg_eig_cusolver_xgeev' both geev routines modify the provided input matrix in-place, therefore we need a copy
+
+  // A 1x1 matrix is its own eigenvalue with eigenvector 1. Both backends below issue one solver
+  // call per matrix, which dominates the runtime for large batches of 1x1 inputs.
+  if (input.size(-1) == 1) {
+    auto diag = input.select(-1, 0);
+    if (input.is_complex()) {
+      eigenvalues.copy_(diag);
+    } else {
+      // for real input, 'eigenvalues' holds the real parts followed by the imaginary parts (see linalg_eig_out_info)
+      eigenvalues.narrow(-1, 0, 1).copy_(diag);
+      eigenvalues.narrow(-1, 1, 1).zero_();
+    }
+    if (compute_eigenvectors) {
+      eigenvectors.fill_(1);
+    }
+    infos.zero_();
+    return;
+  }
+
 #if (defined(CUSOLVER_VERSION) && (CUSOLVER_VERSION >= 11702)) || (defined(USE_ROCM) && ROCM_VERSION >= 71400)
   _warn_once_magma_deprecation("linalg.eig");
   linalg_eig_cusolver_xgeev(eigenvalues, eigenvectors, input, infos, compute_eigenvectors);
