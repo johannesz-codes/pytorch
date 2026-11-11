@@ -1477,7 +1477,16 @@ def current_blas_handle():
 
 
 def current_solver_handle():
-    r"""Return cusolverDnHandle_t pointer to current cuSOLVER handle"""
+    r"""Return the ``cusolverDnHandle_t`` pointer for the current device and thread.
+
+    ATen runs the cuSOLVER-based linear algebra operations of this thread on
+    this handle, on whichever stream is current when each operation runs.
+    Settings changed on the handle, for example its math mode through
+    nvmath-python, stay in effect for later operations until they are changed
+    again. PyTorch does not reset them. See :ref:`cusolver-handles` for an
+    example that enables FP32 emulation with BF16, and for which operations and
+    threads such a setting applies to.
+    """
     _lazy_init()
     return torch._C._cuda_getCurrentSolverHandle()
 

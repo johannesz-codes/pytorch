@@ -1202,6 +1202,53 @@ The workspace size per allocation can be specified via `CUBLAS_WORKSPACE_CONFIG`
 `2 * 4096 + 8 * 16 KiB`. To force cuBLAS to avoid using workspaces, set
 `CUBLAS_WORKSPACE_CONFIG=:0:0`.
 
+(cusolver-handles)=
+
+## cuSOLVER handles and FP32 emulation
+
+ATen keeps one cuSOLVER (`cusolverDn`) handle per thread and device. Linear algebra
+operations that dispatch to cuSOLVER, such as {func}`torch.linalg.lu_factor` or
+{func}`torch.linalg.qr`, run on that handle. {func}`torch.cuda.current_solver_handle`
+returns it as an integer `cusolverDnHandle_t` pointer, so libraries that wrap the
+cuSOLVER API can change its settings. PyTorch does not change the cuSOLVER defaults
+and does not reset settings made this way.
+
+For example, with cuSOLVER from CUDA 12.9 or newer, FP32 routines can emulate FP32
+arithmetic with BF16 (BF16x9) on GPUs with compute capability 10.0 or 10.3. This can
+be faster for large matrices. Like `bfx9` for matmuls (see {ref}`tf32_on_ampere`),
+the result is not IEEE-754 compliant and its accuracy depends on the workload.
+PyTorch does not enable this mode. You can enable it on the current handle with
+[nvmath-python](https://docs.nvidia.com/cuda/nvmath-python/):
+
+```python
+import torch
+import nvmath.bindings.cusolverDn as cusolverDn
+from nvmath.bindings.cusolver import MathMode
+
+handle = torch.cuda.current_solver_handle()
+default_mode = cusolverDn.get_math_mode(handle)
+
+cusolverDn.set_math_mode(handle, MathMode.FP32_EMULATED_BF16X9_MATH)
+A = torch.rand(2**14, 2**14, device="cuda")
+LU, pivots, info = torch.linalg.lu_factor_ex(A)  # may use BF16x9 emulation
+
+cusolverDn.set_math_mode(handle, default_mode)  # restore the previous mode
+```
+
+On a GPU with compute capability 10.3, `torch.linalg.lu_factor_ex` on this matrix took
+about 100 ms with emulation and about 169 ms without it.
+
+A setting made on the handle stays in effect until it is changed again. It applies
+to every ATen operation on the same thread and device that uses cuSOLVER, and only
+to those: an operation that dispatches to MAGMA or cuBLAS instead is not affected
+(see {func}`torch.backends.cuda.preferred_linalg_library`). Other threads and devices
+use other handles, so call {func}`torch.cuda.current_solver_handle` on each thread and
+with each device current where the setting should apply. When a thread exits, its
+handle goes back to a pool and can be reused, with its settings, by a thread created
+later. Which routines honor the math mode, and the other handle settings that exist,
+are described in the
+[cuSOLVER documentation](https://docs.nvidia.com/cuda/cusolver/index.html).
+
 (cufft-plan-cache)=
 
 ## cuFFT plan cache
