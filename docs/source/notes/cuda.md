@@ -1226,17 +1226,11 @@ import nvmath.bindings.cusolverDn as cusolverDn
 from nvmath.bindings.cusolver import MathMode
 
 handle = torch.cuda.current_solver_handle()
-default_mode = cusolverDn.get_math_mode(handle)
-
 cusolverDn.set_math_mode(handle, MathMode.FP32_EMULATED_BF16X9_MATH)
-A = torch.rand(2**14, 2**14, device="cuda")
-LU, pivots, info = torch.linalg.lu_factor_ex(A)  # may use BF16x9 emulation
-
-cusolverDn.set_math_mode(handle, default_mode)  # restore the previous mode
 ```
 
-On a GPU with compute capability 10.3, `torch.linalg.lu_factor_ex` on this matrix took
-about 100 ms with emulation and about 169 ms without it.
+On a GPU with compute capability 10.3, `torch.linalg.lu_factor_ex` on a 2^14 x 2^14
+FP32 matrix took about 100 ms with emulation and about 169 ms without it.
 
 A setting made on the handle stays in effect until it is changed again. It applies
 to every ATen operation on the same thread and device that uses cuSOLVER, and only
