@@ -13,6 +13,13 @@ common_notes = {
         "When inputs are on a CUDA device, this function synchronizes that device with the CPU. "
         "For a version of this function that does not synchronize, see :func:`{}`."
     ),
+    "geev_cuda_note": (
+        "Since PyTorch 2.10, CUDA inputs are computed on the GPU with cuSOLVER's ``geev``.\n"
+        "          For small matrices this can be slower than computing on the CPU, especially for\n"
+        "          batches, since cuSOLVER has no batched ``geev`` and processes a batch one matrix at a time.\n"
+        "          As a rough starting point, for :math:`n < 256` it may be faster to move :attr:`A`\n"
+        "          to the CPU and move the results back."
+    ),
 }
 
 
@@ -500,6 +507,8 @@ The returned eigenvalues are not guaranteed to be in any specific order.
 """
     + rf"""
 .. note:: {common_notes["sync_note"]}
+
+.. note:: {common_notes["geev_cuda_note"]}
 """
     + r"""
 
@@ -611,6 +620,8 @@ The returned eigenvalues are not guaranteed to be in any specific order.
 """
     + rf"""
 .. note:: {common_notes["sync_note"]}
+
+.. note:: {common_notes["geev_cuda_note"]}
 """
     + r"""
 
